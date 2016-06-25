@@ -8,6 +8,7 @@
 -module(su_database_man).
 -author("tihon").
 
+-include("su_database.hrl").
 -include("su_headers.hrl").
 
 %% API

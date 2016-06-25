@@ -22,21 +22,26 @@ send_password(Lang, Email, Password, Name) ->
     String ->
       Html = io_lib:format(String, [Name, Password]),
       validate_send(Name, Email, Html, ?ACTIVATION_SUBJECT(Lang))
-  end,
-  ok.
+  end.
 
 
 %% @private
 validate_send(Name, Email, Html, Theme) ->
   case binary:match(Email, <<"@">>) of
-    nomatch -> ok;
+    nomatch -> false;
     _ ->
-      spawn(
-        fun() ->
-          Domain = sc_conf_holder:get_conf(?MAILGUN_DOMAIN),
-          ApiUrl = sc_conf_holder:get_conf(?MAILGUN_API_URL),
-          ApiKey = sc_conf_holder:get_conf(?MAILGUN_API_KEY),
-          email_adapter_mailgun:send(binary_to_list(<<ApiUrl/binary, <<"/">>/binary, Domain/binary>>), binary_to_list(ApiKey),
-            {Name, Email}, {<<"SeaServer">>, <<"noreply@seabattle.com">>}, Theme, [{<<"html">>, list_to_binary(Html)}], [])
-        end)
+      Domain = sc_conf_holder:get_conf(?MAILGUN_DOMAIN),
+      ApiUrl = sc_conf_holder:get_conf(?MAILGUN_API_URL),
+      ApiKey = sc_conf_holder:get_conf(?MAILGUN_API_KEY),
+      if
+        Domain /= undefined andalso ApiKey /= undefined andalso ApiUrl /= undefined ->
+          spawn(
+            fun() ->
+              email_adapter_mailgun:send(binary_to_list(<<ApiUrl/binary, <<"/">>/binary, Domain/binary>>), binary_to_list(ApiKey),
+                {Name, Email}, {<<"SeaServer">>, <<"noreply@seabattle.com">>}, Theme, [{<<"html">>, list_to_binary(Html)}], [])
+            end),
+          true;
+        true ->
+          false
+      end
   end.

@@ -4,11 +4,8 @@
 %%% @doc
 %%%
 %%% @end
-%%% Created : 25. Jun 2016 17:49
 %%%-------------------------------------------------------------------
 -author("tihon").
-
--define(DATABASE_POOL, su_db_pool).
 
 %% Database conf vars
 -define(DATABASE_HOSTS, <<"database/hosts">>).
@@ -27,3 +24,11 @@
 
 %% Html templates
 -define(NEW_PASS_HTML, <<"su_new_password.html">>).
+
+%% Key headers
+-define(EMAIL, <<"email">>).  %user's unique email (or any other string)
+-define(UID, <<"uid">>).    %user's unique id (is generated is su_user_logic as uuid)
+-define(NAME, <<"name">>).  %user's name
+-define(VICTORIES, <<"victories">>).  %user's victory statistics
+-define(LOOSES, <<"looses">>).    %user's loose statistics
+-define(SECRET, <<"secret">>).    %user's password (is generated in su_user_logic)
