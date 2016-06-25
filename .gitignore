@@ -12,3 +12,4 @@ rel/example_project
 /.erlang.mk/
 /_rel/
 /relx
+/SeaUsers.iml

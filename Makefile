@@ -1,8 +1,9 @@
 PROJECT = seausers
 
-DEPS = eredis mongodb
-dep_eredis = git https://github.com/wooga/eredis.git master #TODO tag
+DEPS = eredis_cluster mongodb seaconfig
+dep_eredis_cluster = git https://github.com/SeaBattle/eredis_cluster.git 0.5.8
 dep_mongodb = git https://github.com/comtihon/mongodb-erlang.git v1.1.2
+dep_seaconfig = git https://github.com/SeaBattle/SeaConfig.git master
 
 
 

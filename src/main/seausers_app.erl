@@ -3,22 +3,16 @@
 -behaviour(application).
 
 %% Application callbacks
--export([start/2, stop/1, get_conf_param/2]).
+-export([start/2, stop/1]).
 
 %% ===================================================================
 %% Application callbacks
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
-    su_super_sup:start_link().
+  Ret = su_super_sup:start_link(),
+  {ok, _} = su_database_man:init(),
+  Ret.
 
 stop(_State) ->
-    ok.
-
-get_conf_param(Name, Default) ->
-	try
-		{ok, Application} = application:get_application(),
-		application:get_env(Application, Name, Default)
-	catch
-		_:_ -> Default
-	end.
+  ok.
