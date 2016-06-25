@@ -11,3 +11,7 @@
 
 %% database collections
 -define(USERS_COLLECTION, <<"users">>).
+
+%% read modes
+-define(MASTER, [{rp_mode, primary}]).
+-define(SLAVE, [{rp_mode, secondaryPreferred}]).

@@ -10,4 +10,12 @@
 -author("tihon").
 
 %% API
--export([]).
+-export([get_salt/1, set_salt/2]).
+
+-spec get_salt(binary()) -> {ok, binary()} | {error, binary() | atom()}.
+get_salt(Id) ->
+  eredis_cluster:q([<<"GET">>, <<<<"auth_conf_">>/binary, Id/binary>>]).
+
+-spec set_salt(binary(), binary()) -> {ok, binary()} | {error, binary() | atom()}.
+set_salt(Id, Salt) ->
+  eredis_cluster:q([<<"SETEX">>, <<<<"auth_conf_">>/binary, Id/binary>>, <<"5">>, Salt]).

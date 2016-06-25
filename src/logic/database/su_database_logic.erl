@@ -30,4 +30,4 @@ read_one(Collection, Key, Projector, ReadOpts, Timeout) ->
 
 write(Collection, Document) ->
   mongoc:transaction(?DATABASE_POOL,
-    fun(Worker) -> mc_worker_api:insert(Worker, Collection, Document, {<<"w">>, 0}) end, ?REQUEST_TIMEOUT).
+    fun(Worker) -> mc_worker_api:insert(Worker, Collection, Document, {<<"w">>, 1}) end, ?REQUEST_TIMEOUT).
