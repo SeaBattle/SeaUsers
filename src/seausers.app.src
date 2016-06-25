@@ -1,0 +1,13 @@
+{application, seausers,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {modules, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { seausers_app, []}},
+  {env, []}
+ ]}.
