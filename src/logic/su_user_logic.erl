@@ -16,24 +16,33 @@
 -define(SALT_LEN, 10).
 -define(SECRET_ITERATIONS, 100).
 -define(SECRET_LENGTH, 20).
--define(DATABASE_TIMEOUT, 5000).
 
 %% API
--export([register/3, login/2]).
+-export([register/3, login_step_1/1, login_step_2/2]).
 
 -spec register(binary(), binary(), binary()) -> true | {false, error_code()}.
 register(Email, Name, Lang) ->
   UEmail = su_utils:to_lower(Email),
-  case su_database_logic:read_one(?USERS_COLLECTION, #{?EMAIL_HEAD => UEmail}, #{<<"_id">> => true}, ?MASTER, ?DATABASE_TIMEOUT) of
-    undefined ->
-      create_user(Email, Lang, Name);
-    _ ->
-      {false, ?USER_EXISTS}
+  case su_database_man:is_email_exists(UEmail) of
+    true -> {false, ?USER_EXISTS};
+    false -> create_user(Email, Lang, Name)
   end.
 
--spec login(binary(), binary()) -> true | {true, map()} | {false, error_code()}.
-login(UID, Secret) ->
-  auth_user(UID, Secret). %TODO save online user to cache. May be save it's node, pid and put it to monitor?
+%% Return salt and auth conf to user, save salt to cache.
+login_step_1(UID) ->
+  #{?SALT_HEAD := Salt} = Conf = generate_auth_conf(),
+  {ok, <<"OK">>} = su_cache_logic:set_salt(UID, Salt),
+  {true, Conf}.
+
+%% Return true if auth is ok
+%% Return {false, ErrCode} in case of auth error
+-spec login_step_2(binary(), binary()) -> true | {true, map()} | {false, error_code()}.
+login_step_2(UID, Secret) ->
+  case su_cache_logic:get_salt(UID) of
+    {ok, undefined} -> {false, ?SALT_REQUIRED};
+    {ok, Salt} -> check_secret(UID, Secret, Salt);
+    _Error -> {false, ?SERVER_ERROR}
+  end. %TODO save online user to cache. May be save it's node, pid and put it to monitor?
 
 
 %% @private
@@ -52,29 +61,13 @@ create_user(Email, Lang, Name) ->
   end.
 
 %% @private
-%% Return {true, Conf} if secret needs to be calculated
-%% Return true if auth is ok
-%% Return {false, ErrCode} in case of auth error
-auth_user(UID, Secret) -> %TODO on first step there will no Secret. Refator me
-  case su_cache_logic:get_salt(UID) of
-    {ok, undefined} ->  %no previous step - generate salt, save it and send to user
-      #{?SALT_HEAD := Salt} = Conf = generate_auth_conf(),
-      {ok, <<"OK">>} = su_cache_logic:set_salt(UID, Salt),
-      {true, Conf};
-    {ok, Salt} ->
-      check_secret(UID, Secret, Salt);
-    _Error ->
-      {false, ?SERVER_ERROR}
-  end.
-
-%% @private
 generate_auth_conf() ->
   Salt = base64:encode(crypto:strong_rand_bytes(?SALT_LEN)),
   #{?SALT_HEAD => Salt, ?SECRET_LEN_HEAD => ?SECRET_LENGTH, ?SECRET_ITERATIONS_HEAD => ?SECRET_ITERATIONS}.
 
 %% @private
 check_secret(UID, Secret, Salt) ->
-  case su_database_logic:read_one(?USERS_COLLECTION, #{?UID_HEAD => UID}, #{?SECRET_HEAD => true}, ?SLAVE, ?DATABASE_TIMEOUT) of
+  case su_database_man:find_user_by_uid(UID) of
     {ok, #{?SECRET_HEAD := OriginalSecret}} ->
       case calculate_secret(OriginalSecret, Salt) of
         Secret -> true;

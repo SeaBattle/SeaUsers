@@ -9,7 +9,8 @@
       stdlib,
       eredis_cluster,
       mongodb,
-      seaconfig
+      seaconfig,
+      seautils
     ]},
     {mod, {seausers_app, []}},
     {env,
