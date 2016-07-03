@@ -9,13 +9,13 @@
 
 %% Database conf vars
 -define(DATABASE_HOSTS, <<"database/hosts">>).
--define(DATABASE_DB, <<"database/pool_size">>).
--define(DATABASE_LOGIN, <<"database/pool_size">>).
--define(DATABASE_PASS, <<"database/pool_size">>).
+-define(DATABASE_DB, <<"database/db">>).
+-define(DATABASE_LOGIN, <<"database/login">>).
+-define(DATABASE_PASS, <<"database/pass">>).
 -define(DATABASE_SIZE, <<"database/pool_size">>).
--define(DATABASE_OVERFLOW, <<"database/pool_size">>).
--define(DATABASE_OVERFLOW_TTL, <<"database/pool_size">>).
--define(DATABASE_OVERFLOW_CHECK, <<"database/pool_size">>).
+-define(DATABASE_OVERFLOW, <<"database/pool_overflow">>).
+-define(DATABASE_OVERFLOW_TTL, <<"database/overflow_ttl">>).
+-define(DATABASE_OVERFLOW_CHECK, <<"database/overflow_check">>).
 
 %% Email conf vars
 -define(MAILGUN_DOMAIN, <<"email/domain">>).
