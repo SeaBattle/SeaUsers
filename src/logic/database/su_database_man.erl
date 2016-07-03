@@ -10,6 +10,7 @@
 
 -include("su_database.hrl").
 -include("su_headers.hrl").
+-include_lib("seaconfig/include/sc_headers.hrl").
 
 -define(DATABASE_TIMEOUT, 5000).
 

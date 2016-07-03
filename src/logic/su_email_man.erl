@@ -10,6 +10,7 @@
 
 -include("su_headers.hrl").
 -include("su_localization.hrl").
+-include_lib("seaconfig/include/sc_headers.hrl").
 
 %% API
 -export([send_password/4]).

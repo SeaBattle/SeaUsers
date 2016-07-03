@@ -10,7 +10,8 @@
       eredis_cluster,
       mongodb,
       seaconfig,
-      seautils
+      seautils,
+      cowboy
     ]},
     {mod, {seausers_app, []}},
     {env,

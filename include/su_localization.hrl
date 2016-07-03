@@ -10,6 +10,8 @@
 -define(ENGLISH, <<"en">>).
 -define(RUSSIAN, <<"ru">>).
 
+-define(DEFAULT_LANG, ?ENGLISH).
+
 -define(ACTIVATION_SUBJECT(LOCALE),
   case LOCALE of
     ?RUSSIAN -> <<"Морской бой, регистрация.">>;

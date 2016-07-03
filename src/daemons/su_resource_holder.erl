@@ -29,7 +29,6 @@
 -define(RES_UPDATE_INTERVAL, 15000). %15 sec
 
 -define(HTML_DIR, "html/").
--define(DEFAULT_LANG, ?ENGLISH).
 
 -record(state, {}).
 

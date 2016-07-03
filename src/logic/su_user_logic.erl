@@ -20,13 +20,13 @@
 %% API
 -export([register/3, login_step_1/1, login_step_2/2]).
 
--spec register(binary(), binary(), binary()) -> true | {false, error_code()}.
+-spec register(binary(), binary(), binary()) -> true | {true | binary()} | {false, error_code()}.
 register(Email, Name, Lang) ->
   UEmail = su_utils:to_lower(Email),
   case su_database_man:is_email_exists(UEmail) of
     true -> {false, ?USER_EXISTS};
     false -> create_user(Email, Lang, Name)
-  end.
+  end.  %TODO made unify return {boolean(), map()}
 
 %% Return salt and auth conf to user, save salt to cache.
 login_step_1(UID) ->
