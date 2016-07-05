@@ -12,6 +12,8 @@
 %% API
 -export([get_salt/1, set_salt/2]).
 
+%TODO make eredis_cluster configuration store in etcd
+
 -spec get_salt(binary()) -> {ok, binary()} | {error, binary() | atom()}.
 get_salt(Id) ->
   eredis_cluster:q([<<"GET">>, <<<<"auth_conf_">>/binary, Id/binary>>]).

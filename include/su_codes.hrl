@@ -16,4 +16,7 @@
 -define(NO_SUCH_USER, 102).
 -define(SALT_REQUIRED, 103).
 
+%% System codes
+-define(OK, 0).
 -define(SERVER_ERROR, 500).
+-define(INCORRECT_ARGUMENTS, 501).

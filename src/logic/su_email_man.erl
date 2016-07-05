@@ -31,9 +31,9 @@ validate_send(Name, Email, Html, Theme) ->
   case binary:match(Email, <<"@">>) of
     nomatch -> false;
     _ ->
-      Domain = sc_conf_holder:get_conf(?MAILGUN_DOMAIN),
-      ApiUrl = sc_conf_holder:get_conf(?MAILGUN_API_URL),
-      ApiKey = sc_conf_holder:get_conf(?MAILGUN_API_KEY),
+      Domain = sc_conf_holder:get_conf(?MAILGUN_DOMAIN_CONF),
+      ApiUrl = sc_conf_holder:get_conf(?MAILGUN_API_URL_CONF),
+      ApiKey = sc_conf_holder:get_conf(?MAILGUN_API_KEY_CONF),
       if
         Domain /= undefined andalso ApiKey /= undefined andalso ApiUrl /= undefined ->
           spawn(

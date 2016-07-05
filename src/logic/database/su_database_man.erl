@@ -19,7 +19,7 @@
 -export([init/0, find_user_by_uid/1, is_email_exists/1]).
 
 init() ->
-  Hosts = sc_conf_holder:get_conf(?DATABASE_HOSTS),
+  Hosts = sc_conf_holder:get_conf(?DATABASE_HOSTS_CONF),
   PoolDefaults = application:get_env(database, []),
   PoolConf = form_pool_conf(PoolDefaults),
   WorkerConf = form_worker_conf(),
@@ -36,10 +36,10 @@ is_email_exists(Email) ->
 
 %% @private
 form_pool_conf(Conf) ->
-  PoolSize = sc_conf_holder:get_conf(?DATABASE_SIZE),
-  Overflow = sc_conf_holder:get_conf(?DATABASE_OVERFLOW),
-  OverTTL = sc_conf_holder:get_conf(?DATABASE_OVERFLOW_TTL),
-  OverCheckPeriod = sc_conf_holder:get_conf(?DATABASE_OVERFLOW_CHECK),
+  PoolSize = sc_conf_holder:get_conf(?DATABASE_SIZE_CONF),
+  Overflow = sc_conf_holder:get_conf(?DATABASE_OVERFLOW_CONF),
+  OverTTL = sc_conf_holder:get_conf(?DATABASE_OVERFLOW_TTL_CONF),
+  OverCheckPeriod = sc_conf_holder:get_conf(?DATABASE_OVERFLOW_CHECK_CONF),
   [
     {pool_size, PoolSize},
     {max_overflow, Overflow},
@@ -50,7 +50,7 @@ form_pool_conf(Conf) ->
 
 %% @private
 form_worker_conf() ->
-  Login = sc_conf_holder:get_conf(?DATABASE_LOGIN),
-  Password = sc_conf_holder:get_conf(?DATABASE_PASS),
-  Database = sc_conf_holder:get_conf(?DATABASE_DB),
+  Login = sc_conf_holder:get_conf(?DATABASE_LOGIN_CONF),
+  Password = sc_conf_holder:get_conf(?DATABASE_PASS_CONF),
+  Database = sc_conf_holder:get_conf(?DATABASE_DB_CONF),
   lists:filter(fun({_, A}) -> A /= undefined end, [{login, Login}, {database, Database}, {password, Password}]).

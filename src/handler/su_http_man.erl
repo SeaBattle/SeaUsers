@@ -15,8 +15,8 @@
 -export([init_http_handler/0]).
 
 init_http_handler() ->
-  Port = sc_conf_holder:get_conf(?USER_SERVICE_HTTP_PORT, 8080),
-  Acceptors = sc_conf_holder:get_conf(?USER_SERVICE_HTTP_ACCEPTORS, 100),
+  Port = sc_conf_holder:get_conf(?USER_SERVICE_HTTP_PORT_CONF, 8080),
+  Acceptors = sc_conf_holder:get_conf(?USER_SERVICE_HTTP_ACCEPTORS_CONF, 100),
   Dispatch = cowboy_router:compile(
     [
       {'_',

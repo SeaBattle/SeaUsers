@@ -10,7 +10,6 @@
 -author("tihon").
 
 -include("su_headers.hrl").
--include("su_localization.hrl").
 
 %% Cowboy callbacks
 -export([init/2, reply/2, reply/3]).
@@ -32,29 +31,15 @@ reply(Req, 200, Data) ->
 
 
 %% @private
-act(<<"/register/", _/binary>>, Req, _) ->   %TODO code is to complex, move getting register params somewhere else
+act(<<"/register/", _/binary>>, Req, _) ->
   {ok, Body, Req2} = cowboy_req:body(Req, [{length, infinity}]),
   Decoded = jsone:decode(Body, [{object_format, map}]),
-  {Email, Name, Lang} = get_register_params(Decoded),
-  Result = su_user_logic:register(Email, Name, Lang),
-  Encoded = form_register_result(Result),
-  reply(Req2, 200, jsone:encode(Encoded));
+  Result = su_user_logic:register(Decoded),
+  reply(Req2, 200, jsone:encode(Result));
 act(<<"/login/", _/binary>>, Req, _) ->
   {ok, Body, Req2} = cowboy_req:body(Req, [{length, infinity}]),
   Decoded = jsone:decode(Body, [{object_format, map}]),
-  %TODO find step to run proper login fun
-  reply(Req2, 200);
+  Result = su_user_logic:login(Decoded),
+  reply(Req2, 200, jsone:encode(Result));
 act(_, Req, _) ->
   reply(Req, 404).
-
-%% @private
-get_register_params(#{?EMAIL_HEAD := Email, ?NAME_HEAD := Name, ?LANG_HEAD := Lang}) ->
-  {Email, Name, Lang};
-get_register_params(#{?EMAIL_HEAD := Email, ?NAME_HEAD := Name}) ->
-  {Email, Name, ?DEFAULT_LANG}.
-
-%% @private
-form_register_result({true, Pass}) ->  ok;
-form_register_result(true) ->  ok;
-form_register_result({false, Code}) ->  ok.
-

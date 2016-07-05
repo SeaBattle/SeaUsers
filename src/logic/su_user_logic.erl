@@ -12,37 +12,65 @@
 -include("su_headers.hrl").
 -include("su_database.hrl").
 -include("su_codes.hrl").
+-include("su_localization.hrl").
+-include_lib("seaconfig/include/sc_headers.hrl").
 
 -define(SALT_LEN, 10).
 -define(SECRET_ITERATIONS, 100).
 -define(SECRET_LENGTH, 20).
 
-%% API
--export([register/3, login_step_1/1, login_step_2/2]).
+-define(DEFAULT_NAME, <<"Vasya">>).
+-define(CHECK_FILL(X, M, D),
+  case maps:is_key(X, M) of
+    true -> M;
+    false -> M#{X = D}
+  end).
 
--spec register(binary(), binary(), binary()) -> true | {true | binary()} | {false, error_code()}.
-register(Email, Name, Lang) ->
+%% API
+-export([register/1, login/1]).
+
+%% Email is needed.
+-spec register(map()) -> map().
+register(#{?EMAIL_HEAD := Email, ?NAME_HEAD := Name, ?LANG_HEAD := Lang}) ->
   UEmail = su_utils:to_lower(Email),
   case su_database_man:is_email_exists(UEmail) of
-    true -> {false, ?USER_EXISTS};
-    false -> create_user(Email, Lang, Name)
-  end.  %TODO made unify return {boolean(), map()}
+    true -> #{?RESULT_HEAD => false, ?CODE_HEAD => ?USER_EXISTS};
+    false ->
+      case create_user(Email, Lang, Name) of
+        {true, Id} ->
+          #{?RESULT_HEAD => true, ?UID_HEAD => Id, ?CODE_HEAD => ?OK};
+        {true, Id, Pass} ->
+          #{?RESULT_HEAD => true, ?UID_HEAD => Id, ?PASSWORD_HEAD => Pass, ?CODE_HEAD => ?OK}
+      end
+  end;
+register(Map = #{?EMAIL_HEAD := _}) ->
+  MapWithLang = ?CHECK_FILL(?LANG_HEAD, Map, ?DEFAULT_LANG),
+  MapWithName = ?CHECK_FILL(?NAME_HEAD, MapWithLang, ?DEFAULT_NAME),
+  register(MapWithName);
+register(_) ->
+  #{?RESULT_HEAD => false, ?CODE_HEAD => ?INCORRECT_ARGUMENTS}.
 
-%% Return salt and auth conf to user, save salt to cache.
-login_step_1(UID) ->
+%% UID for step1, UID and Secret for step2 needed.
+-spec login(map()) -> map().
+login(#{?UID_HEAD := UID}) -> %% Return salt and auth conf to user, save salt to cache.
   #{?SALT_HEAD := Salt} = Conf = generate_auth_conf(),
   {ok, <<"OK">>} = su_cache_logic:set_salt(UID, Salt),
-  {true, Conf}.
-
-%% Return true if auth is ok
-%% Return {false, ErrCode} in case of auth error
--spec login_step_2(binary(), binary()) -> true | {true, map()} | {false, error_code()}.
-login_step_2(UID, Secret) ->
+  Conf#{?RESULT_HEAD => true};
+login(#{?UID_HEAD := UID, ?SECRET_HEAD := Secret, ?USER_TOKEN := Token}) -> %get auth conf from cache, auth user and register online.
   case su_cache_logic:get_salt(UID) of
-    {ok, undefined} -> {false, ?SALT_REQUIRED};
-    {ok, Salt} -> check_secret(UID, Secret, Salt);
-    _Error -> {false, ?SERVER_ERROR}
-  end. %TODO save online user to cache. May be save it's node, pid and put it to monitor?
+    {ok, undefined} -> #{?RESULT_HEAD => false, ?CODE_HEAD => ?SALT_REQUIRED};
+    {ok, Salt} ->
+      case check_secret(UID, Secret, Salt) of
+        true ->
+          ok = register_user_online(UID, Token),
+          #{?RESULT_HEAD => true, ?CODE_HEAD => ?OK};
+        {false, Reason} ->
+          #{?RESULT_HEAD => false, ?CODE_HEAD => Reason}
+      end;
+    _Error -> #{?RESULT_HEAD => false, ?CODE_HEAD => ?SERVER_ERROR}
+  end;
+login(_) ->
+  #{?RESULT_HEAD => false, ?CODE_HEAD => ?INCORRECT_ARGUMENTS}.
 
 
 %% @private
@@ -56,14 +84,21 @@ create_user(Email, Lang, Name) ->
   {{true, _}, _} = su_database_logic:write(?USERS_COLLECTION,
     #{?EMAIL_HEAD => Email, ?UID_HEAD => Id, ?NAME_HEAD => Name, ?VICTORIES_HEAD => 0, ?LOOSES_HEAD => 0, ?SECRET_HEAD => Hash}),
   case su_email_man:send_password(Lang, Email, PassBin, Name) of
-    true -> true;
-    false -> {true, PassBin}
+    true -> {true, Id};
+    false -> {true, Id, PassBin}
   end.
 
 %% @private
+register_user_online(Uid, Token) -> %TODO how to determine if user done offline?
+  ok.
+
+%% @private
 generate_auth_conf() ->
-  Salt = base64:encode(crypto:strong_rand_bytes(?SALT_LEN)),
-  #{?SALT_HEAD => Salt, ?SECRET_LEN_HEAD => ?SECRET_LENGTH, ?SECRET_ITERATIONS_HEAD => ?SECRET_ITERATIONS}.
+  SaltLen = sc_conf_holder:get_conf(?SALT_LEN_CONF, ?SALT_LEN),
+  Iterations = sc_conf_holder:get_conf(?SECRET_LEN_CONF, ?SECRET_ITERATIONS),
+  SecretLen = sc_conf_holder:get_conf(?SECRET_ITER_CONF, ?SECRET_LENGTH),
+  Salt = base64:encode(crypto:strong_rand_bytes(SaltLen)),
+  #{?SALT_HEAD => Salt, ?SECRET_LEN_HEAD => SecretLen, ?SECRET_ITERATIONS_HEAD => Iterations}.
 
 %% @private
 check_secret(UID, Secret, Salt) ->
