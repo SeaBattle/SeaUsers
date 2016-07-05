@@ -54,10 +54,10 @@ register(_) ->
 -spec login(map()) -> map().
 login(#{?UID_HEAD := UID}) -> %% Return salt and auth conf to user, save salt to cache.
   #{?SALT_HEAD := Salt} = Conf = generate_auth_conf(),
-  {ok, <<"OK">>} = su_cache_logic:set_salt(UID, Salt),
+  {ok, <<"OK">>} = su_cache_man:set_salt(UID, Salt),
   Conf#{?RESULT_HEAD => true};
 login(#{?UID_HEAD := UID, ?SECRET_HEAD := Secret, ?USER_TOKEN := Token}) -> %get auth conf from cache, auth user and register online.
-  case su_cache_logic:get_salt(UID) of
+  case su_cache_man:get_salt(UID) of
     {ok, undefined} -> #{?RESULT_HEAD => false, ?CODE_HEAD => ?SALT_REQUIRED};
     {ok, Salt} ->
       case check_secret(UID, Secret, Salt) of

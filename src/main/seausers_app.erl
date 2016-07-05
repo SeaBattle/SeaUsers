@@ -12,6 +12,7 @@
 start(_StartType, _StartArgs) ->
   Ret = su_super_sup:start_link(),
   {ok, _} = su_database_man:init(),
+  {ok, _} = su_cache_man:init(),
   Ret.
 
 stop(_State) ->
