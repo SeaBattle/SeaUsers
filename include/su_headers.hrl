@@ -17,5 +17,3 @@
 -define(SALT_HEAD, <<"salt">>).        %server-generated salt. Used for auth
 -define(SECRET_LEN_HEAD, <<"secret_len">>).  %length of generated secret. Used for auth
 -define(SECRET_ITERATIONS_HEAD, <<"secret_iter">>).  %number of iterations to generate secret. Used for auth
--define(RESULT_HEAD, <<"result">>).
--define(CODE_HEAD, <<"code">>).
