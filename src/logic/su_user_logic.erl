@@ -14,6 +14,7 @@
 -include("su_codes.hrl").
 -include("su_localization.hrl").
 -include_lib("seaconfig/include/sc_headers.hrl").
+-include_lib("seaconfig/include/sc_common_headers.hrl").
 
 -define(SALT_LEN, 10).
 -define(SECRET_ITERATIONS, 100).
@@ -62,7 +63,7 @@ login(#{?UID_HEAD := UID, ?SECRET_HEAD := Secret, ?USER_TOKEN := Token}) -> %get
     {ok, Salt} ->
       case check_secret(UID, Secret, Salt) of
         true ->
-          ok = register_user_online(UID, Token),
+          {ok, <<"OK">>} = su_cache_man:set_user_online(UID, Token),
           #{?RESULT_HEAD => true, ?CODE_HEAD => ?OK};
         {false, Reason} ->
           #{?RESULT_HEAD => false, ?CODE_HEAD => Reason}
@@ -87,10 +88,6 @@ create_user(Email, Lang, Name) ->
     true -> {true, Id};
     false -> {true, Id, PassBin}
   end.
-
-%% @private
-register_user_online(Uid, Token) -> %TODO how to determine if user done offline?
-  ok.
 
 %% @private
 generate_auth_conf() ->

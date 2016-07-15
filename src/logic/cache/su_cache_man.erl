@@ -12,7 +12,7 @@
 -include_lib("seaconfig/include/sc_headers.hrl").
 
 %% API
--export([get_salt/1, set_salt/2, init/0]).
+-export([get_salt/1, set_salt/2, init/0, set_user_online/2]).
 
 init() ->
   ok = application:load(eredis_cluster),
@@ -36,6 +36,9 @@ get_salt(Id) ->
 set_salt(Id, Salt) ->
   eredis_cluster:q([<<"SETEX">>, <<<<"auth_conf_">>/binary, Id/binary>>, <<"5">>, Salt]).
 
+-spec set_user_online(binary(), binary()) -> {ok, binary()} | {error, binary() | atom()}.
+set_user_online(UID, Token) ->
+  eredis_cluster:q([<<"SET">>, <<<<"user_">>/binary, UID/binary>>, <<"5">>, Token]).
 
 %% @private
 form_init_nodes(BinHosts) ->
