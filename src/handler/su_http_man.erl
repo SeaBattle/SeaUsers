@@ -25,15 +25,5 @@ init_http_handler() ->
         ]
       }
     ]),
-  Buf = get_buffer_size(),
-  {ok, _} = cowboy:start_http(http_handler, Acceptors, [{port, Port}, {buffer, Buf}], [{env, [{dispatch, Dispatch}]}]),
+  {ok, _} = cowboy:start_http(http_handler, Acceptors, [{port, Port}], [{env, [{dispatch, Dispatch}]}]),
   ok.
-
-
-%% @private
-get_buffer_size() ->
-  {ok, S} = gen_tcp:listen(0, []),
-  {ok, Res} = inet:getopts(S, [sndbuf, recbuf]),
-  gen_tcp:close(S),
-  Max = max(proplists:get_value(sndbuf, Res), proplists:get_value(recbuf, Res)),
-  round(Max + Max * 0.05).  %max + 5%

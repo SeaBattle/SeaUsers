@@ -14,7 +14,6 @@
 -include("su_codes.hrl").
 -include("su_localization.hrl").
 -include_lib("seaconfig/include/sc_headers.hrl").
--include_lib("seaconfig/include/sc_common_headers.hrl").
 
 -define(SALT_LEN, 10).
 -define(SECRET_ITERATIONS, 100).
