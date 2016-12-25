@@ -25,9 +25,9 @@
   code_change/3]).
 
 -define(SERVER, ?MODULE).
--define(HTML_ETS, bws_htmls).
+-define(HTML_ETS, sea_htmls).
 -define(RES_UPDATE_INTERVAL, 15000). %15 sec
-
+%% TODO move resources to database/consul
 -define(HTML_DIR, "html/").
 
 -record(state, {}).

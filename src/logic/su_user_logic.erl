@@ -10,14 +10,13 @@
 -author("tihon").
 
 -include("su_headers.hrl").
--include("su_database.hrl").
 -include("su_codes.hrl").
 -include("su_localization.hrl").
--include_lib("seaconfig/include/sc_headers.hrl").
+-include("su_conf_headers.hrl").
 
--define(SALT_LEN, 10).
--define(SECRET_ITERATIONS, 100).
--define(SECRET_LENGTH, 20).
+-define(SALT_LEN_DEF, 10).
+-define(SECRET_ITERATIONS_DEF, 100).
+-define(SECRET_LENGTH_DEF, 20).
 
 -define(DEFAULT_NAME, <<"Vasya">>).
 -define(CHECK_FILL(X, M, D),
@@ -33,7 +32,7 @@
 -spec register(map()) -> map().
 register(#{?EMAIL_HEAD := Email, ?NAME_HEAD := Name, ?LANG_HEAD := Lang}) ->
   UEmail = su_utils:to_lower(Email),
-  case su_database_man:is_email_exists(UEmail) of
+  case su_database_man:is_email_exists(UEmail) of %TODO email is unique, handle error on write
     true -> #{?RESULT_HEAD => false, ?CODE_HEAD => ?USER_EXISTS};
     false ->
       case create_user(Email, Lang, Name) of
@@ -77,12 +76,10 @@ login(_) ->
 %% If email is proper (contains @) - send password to email.
 %% If we can't send email with password for some reason - just return it to user in a response.
 create_user(Email, Lang, Name) ->
-  Id = uuid:to_binary(uuid:uuid4()),
   Pass = su_utils:get_random_non_numeric_string(10),
   Hash = su_utils:hash_secret(Pass),
   PassBin = list_to_binary(Pass),
-  {{true, _}, _} = su_database_logic:write(?USERS_COLLECTION,
-    #{?EMAIL_HEAD => Email, ?UID_HEAD => Id, ?NAME_HEAD => Name, ?VICTORIES_HEAD => 0, ?LOOSES_HEAD => 0, ?SECRET_HEAD => Hash}),
+  {true, Id} = su_database_man:create_user(Email, Name, Hash),
   case su_email_man:send_password(Lang, Email, PassBin, Name) of
     true -> {true, Id};
     false -> {true, Id, PassBin}
@@ -90,9 +87,9 @@ create_user(Email, Lang, Name) ->
 
 %% @private
 generate_auth_conf() ->
-  SaltLen = sc_conf_holder:get_conf(?SALT_LEN_CONF, ?SALT_LEN),
-  Iterations = sc_conf_holder:get_conf(?SECRET_LEN_CONF, ?SECRET_ITERATIONS),
-  SecretLen = sc_conf_holder:get_conf(?SECRET_ITER_CONF, ?SECRET_LENGTH),
+  SaltLen = seaconfig:get_value(?SALT_LEN, ?SALT_LEN_DEF),
+  Iterations = seaconfig:get_value(?SECRET_ITERATIONS, ?SECRET_ITERATIONS_DEF),
+  SecretLen = seaconfig:get_value(?SECRET_LENGTH, ?SECRET_LENGTH_DEF),
   Salt = base64:encode(crypto:strong_rand_bytes(SaltLen)),
   #{?SALT_HEAD => Salt, ?SECRET_LEN_HEAD => SecretLen, ?SECRET_ITERATIONS_HEAD => Iterations}.
 

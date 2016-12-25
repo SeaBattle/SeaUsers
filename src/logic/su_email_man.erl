@@ -10,7 +10,9 @@
 
 -include("su_headers.hrl").
 -include("su_localization.hrl").
--include_lib("seaconfig/include/sc_headers.hrl").
+-include("su_conf_headers.hrl").
+
+-define(API_DOMAIN(A, D), binary_to_list(<<A/binary, <<"/">>/binary, D/binary>>)).
 
 %% API
 -export([send_password/4]).
@@ -31,15 +33,15 @@ validate_send(Name, Email, Html, Theme) ->
   case binary:match(Email, <<"@">>) of
     nomatch -> false;
     _ ->
-      Domain = sc_conf_holder:get_conf(?MAILGUN_DOMAIN_CONF),
-      ApiUrl = sc_conf_holder:get_conf(?MAILGUN_API_URL_CONF),
-      ApiKey = sc_conf_holder:get_conf(?MAILGUN_API_KEY_CONF),
+      Domain = seaconfig:get_value(?MAILGUN_DOMAIN),
+      ApiUrl = seaconfig:get_value(?MAILGUN_URL),
+      ApiKey = seaconfig:get_value(?MAILGUN_KEY),
       if
         Domain /= undefined andalso ApiKey /= undefined andalso ApiUrl /= undefined ->
           spawn(
             fun() ->
-              email_adapter_mailgun:send(binary_to_list(<<ApiUrl/binary, <<"/">>/binary, Domain/binary>>), binary_to_list(ApiKey),
-                {Name, Email}, {<<"SeaServer">>, <<"noreply@seabattle.com">>}, Theme, [{<<"html">>, list_to_binary(Html)}], [])
+              email_adapter_mailgun:send(?API_DOMAIN(ApiUrl, Domain), binary_to_list(ApiKey), {Name, Email},
+                {<<"SeaServer">>, <<"noreply@seabattle.com">>}, Theme, [{<<"html">>, list_to_binary(Html)}], [])
             end),
           true;
         true ->

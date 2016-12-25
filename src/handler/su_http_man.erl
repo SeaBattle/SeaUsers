@@ -9,17 +9,17 @@
 -module(su_http_man).
 -author("tihon").
 
--include_lib("seaconfig/include/sc_headers.hrl").
+-include("su_conf_headers.hrl").
 
 %% API
 -export([init_http_handler/0]).
 
 init_http_handler() ->
-  Port = sc_conf_holder:get_conf(?USER_SERVICE_HTTP_PORT_CONF, 8080),
-  Acceptors = sc_conf_holder:get_conf(?USER_SERVICE_HTTP_ACCEPTORS_CONF, 100),
+  Port = binary_to_integer(seaconfig:get_value(?HTTP_PORT, <<"8080">>)),
+  Acceptors = binary_to_integer(seaconfig:get_value(?HTTP_ACCEPTORS, <<"100">>)),
   Dispatch = cowboy_router:compile(
     [
-      {'_',
+      {'_', %TODO split to different handlers instead of rt case
         [
           {'_', su_http_handler, []}
         ]
